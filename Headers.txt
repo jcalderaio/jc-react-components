@@ -1,0 +1,38 @@
+Johnny_Five - Today at 10:57 AM
+I'm trying to use a login/password to fetch an API from my client and I receive the following errors: "Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'null' is therefore not allowed access."
+
+Now, I already know that my client needs to add an Access-Control-Allow-Origin' header to the server side. BUT, what address is he supposed to put? Not '*' because then anyone would be able to access it. But also not 'www.example.com' because the app will be in the app store, so the origin will always be changing, depending where the user is trying to access the API from. I'm lost :frowning:
+It would be great if it could be 'Access-Control-Allow-Origin: *' but then only allow users with the proper credentials to login and retrieve the data.
+
+BTM - Today at 10:59 AM
+> “Now, I already know that my client needs to add an Access-Control-Allow-Origin' header to the server side. BUT, what address is he supposed to put? Not '*' because then anyone would be able to access it.”
+And that's wrong how?
+
+Remember that CORS is only used in browsers.
+It's not a security measure, it's only there to prevent certain kinds of attack - you should still have another mechanism to identify the user: login+password, token etc.
+CORS is only used for "can I access data from this domain", you still need to do a "can I access this specific data I request"
+
+Johnny_Five - Today at 11:03 AM
+Ohhh. Gotcha. So what particular header will the server need to allow credentials?
+Im guessing "Access-Control-Allow-Credentials: true"
+
+BTM - Today at 11:05 AM
+There is no specific header to enable for credentials. This is again depending on your implementation. The most common one is:
+1. App sends user login+pass to API
+2. API checks the credentials, if it's ok, notes that in the db, creates a random token (which is saved in the DB) and returns the token
+3. Every subsequent request to the API has the token in a header (eg. X-Authentication-Token) and the API checks if the token is valid
+IIIRC enabling Access-Control-Allow-Credentials would require you to set a specific host, no longer being able to set *
+
+This header decides if the API host should be able to read cookies IIRC
+https://enable-cors.org/server.html
+For simple CORS requests, the server only needs to add the following header to its response:
+Access-Control-Allow-Origin: *
+
+Johnny_Five - Today at 11:11 AM
+Since I am making an employee login/hours system for the employer built on a previously constructed database with many tables, the login will return an employee ID # and name, not a token. Using these two identifiers, I will be able to pass these into their API, which will run SQL on their database, and return other data (which I will in turn pass into other API methods calling more SQL, etc.).
+
+BTM - Today at 11:12 AM
+Ok, but your API needs to have some mechanism that will prevent anyone from just sending the data blindly. So in case you are not generating a token, every request to the api should contain login/password
+
+Johnny_Five - Today at 11:14 AM
+My employer is just as new to this as I am, so I will let them know to implement that into the API. Thank you for your help :smiley:
